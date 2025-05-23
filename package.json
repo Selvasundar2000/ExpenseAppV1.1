@@ -3,13 +3,37 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.1.0",
+    "@mui/material": "^7.1.0",
+    "@mui/x-data-grid": "^8.3.1",
+    "@mui/x-date-pickers": "^8.3.1",
+    "@supabase/supabase-js": "^2.49.7",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.6",
+    "cors": "^2.8.5",
+    "datatables.net-bs5": "^2.3.1",
+    "datatables.net-dt": "^2.3.1",
+    "datatables.net-react": "^1.0.1",
+    "datatables.net-responsive-dt": "^3.0.4",
+    "datatables.net-select-dt": "^3.0.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "firebase": "^11.8.0",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.15.0",
     "react": "^19.1.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.0.5",
+    "styled-components": "^6.1.18",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -35,5 +59,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "proxy": "http://localhost:5000",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
