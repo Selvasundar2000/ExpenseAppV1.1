@@ -6,7 +6,6 @@ import TextBox from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import CustomButton from './Utilities/InputControls/CustomButton';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { supabase } from '../supabaseClient'
 import { ToastContainer, toast } from 'react-toastify';
@@ -17,11 +16,15 @@ import DT from 'datatables.net-dt';
 import 'datatables.net-select-dt';
 import 'datatables.net-responsive-dt';
 
-
 DataTable.use(DT);
 
 
 const ContainerBody = () => {
+
+  const [divUptBtn, setdivUptBtn] = useState(false);
+  const [divAddBtn, setdivAddBtn] = useState(false);
+
+
 
   /*List function  -- start*/
 
@@ -44,8 +47,6 @@ const ContainerBody = () => {
     }
   };
 
-
-
   useEffect(() => {
     fetchData();
   }, [])
@@ -56,6 +57,8 @@ const ContainerBody = () => {
 
   const handlePlusClick = () => {
     setOpen(true);
+    setdivUptBtn(false);
+    setdivAddBtn(true);
   };
 
   const handleClose = () => {
@@ -64,6 +67,7 @@ const ContainerBody = () => {
     setTOE('');
     setTOT('');
     setOpen(false);
+    setAutoCode(null);
   };
   const [Amount, setAmount] = useState('');
   const [Tdate, setTDate] = useState(null);
@@ -97,10 +101,12 @@ const ContainerBody = () => {
     }
 
     /*Save Function -- End*/
-    const formattedDate = new Date(Tdate).toISOString().split('T')[0];
-    const amountValue = Amount;
-    const typeOfExpense = TOE;
-    const typeOfTrans = TOT;
+    const year = Tdate.getFullYear();
+    const month = String(Tdate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(Tdate.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
 
 
     try {
@@ -153,6 +159,8 @@ const ContainerBody = () => {
 
   /*Detail Function -- start*/
 
+  const [autocode, setAutoCode] = useState(null);
+
   const handleDetailTransaction = async (data) => {
     setOpen(true);
     setAmount(data.amount);
@@ -160,10 +168,70 @@ const ContainerBody = () => {
     setTOT(data.transcode);
     const parsedDate = new Date(data.dateoftrans);
     setTDate(parsedDate);
+    setdivUptBtn(true);
+    setdivAddBtn(false);
+    setAutoCode(data.autocode);
+
+
   }
+
 
   /*Detail Function -- end*/
 
+
+  /*Update function -- start*/
+  const handleUpdateTransaction = async (data) => {
+
+
+
+    /*Save Function -- End*/
+    const year = Tdate.getFullYear();
+    const month = String(Tdate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(Tdate.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+
+    try {
+      if (!Amount || !Tdate || !TOE || !TOT) {
+
+        toast.error('Please Fill The Field !')
+        return;
+      }
+      else if (autocode == null || autocode == '') {
+        toast.error('AutoCode is Empty !');
+        return
+      }
+      else {
+
+        const { data: Deldata, error: errs } = await supabase.rpc('expensedetailupdate', {
+
+          p_autocode: autocode,
+          p_amount: Amount,
+          p_dateoftrans: formattedDate,
+          p_expensecode: TOE,
+          p_transcode: TOT
+        });
+
+
+        if (errs) {
+
+          toast.error("Update Failed" + errs.message);
+        } else {
+          toast.success("Updated successfully!");
+          fetchData();
+          handleClose();
+
+        }
+      }
+    } catch (err) {
+
+      toast.error('Error', err);
+    }
+  }
+
+
+  /*Update function -- End*/
 
   /*Delete Function -- Start*/
 
@@ -200,6 +268,7 @@ const ContainerBody = () => {
 
   return (
     <>
+
       <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
       {/* First Row */}
@@ -284,14 +353,24 @@ const ContainerBody = () => {
                     />
                   </Grid>
                   <Grid item xs={8}>
-                    <CustomButton
-                      label="Add +"
-                      onClick={handleAddTransaction}
+                    {divAddBtn ?
+                      <Button
+                        id='btnAdd'
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        onClick={handleAddTransaction}
+                      >Add +</Button>
+                      : null}
+                    {divUptBtn ? <Button
+                      id='btnUpdate'
                       variant="contained"
-                      color="info"
-                      id=""
+                      color="success"
                       size="large"
-                    />
+                      onClick={handleUpdateTransaction}
+                    >Update +</Button> : null}
+
+
                   </Grid>
                 </Grid>
 
@@ -354,7 +433,6 @@ const ContainerBody = () => {
         </Box>
 
       </Grid>
-
 
     </>
   );
