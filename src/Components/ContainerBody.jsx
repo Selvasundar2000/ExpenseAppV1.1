@@ -7,29 +7,27 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import { supabase } from '../supabaseClient'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import DataTable from 'datatables.net-react';
-// import DT1 from 'datatables.net-bs5';
-import DT from 'datatables.net-dt';
-import 'datatables.net-select-dt';
-import 'datatables.net-responsive-dt';
-
-DataTable.use(DT);
-
+import DataTable from "react-data-table-component";
+import TotalCntDrCr from './Utilities/TotCntDrCr';
 
 const ContainerBody = () => {
 
   const [divUptBtn, setdivUptBtn] = useState(false);
   const [divAddBtn, setdivAddBtn] = useState(false);
 
-
-
   /*List function  -- start*/
 
   const [datalist, setDataList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [renderKey, setRenderKey] = useState(0);
+
+ const loadUsers = () => {
+    setRenderKey(prevKey => prevKey + 1); // changes key => forces re-render
+  };
 
   const fetchData = async () => {
     try {
@@ -46,12 +44,10 @@ const ContainerBody = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchData();
   }, [])
   /*List function  -- End*/
-
 
   const [open, setOpen] = useState(false);
 
@@ -63,9 +59,10 @@ const ContainerBody = () => {
 
   const handleClose = () => {
     setAmount('');
-    setTDate('');
+    setTDate(null);
     setTOE('');
     setTOT('');
+    setDescrp('');
     setOpen(false);
     setAutoCode(null);
   };
@@ -73,9 +70,7 @@ const ContainerBody = () => {
   const [Tdate, setTDate] = useState(null);
   const [TOE, setTOE] = useState('');
   const [TOT, setTOT] = useState('');
-
-
-
+  const [Descrp, setDescrp] = useState('');
 
   const TypesOfExpenses = [
     { value: 1, label: 'Food' },
@@ -95,7 +90,7 @@ const ContainerBody = () => {
   /*Save function -- start*/
   const handleAddTransaction = async () => {
 
-    if (!Amount || !Tdate || !TOE || !TOT) {
+    if (!Amount || !Tdate || !TOE || !TOT || !Descrp) {
       toast.error('Please Fill The Field !')
       return;
     }
@@ -104,17 +99,15 @@ const ContainerBody = () => {
     const year = Tdate.getFullYear();
     const month = String(Tdate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
     const day = String(Tdate.getDate()).padStart(2, '0');
-
     const formattedDate = `${year}-${month}-${day}`;
-
-
-
     try {
+
       const { data: Adddata, error: error2 } = await supabase.rpc('expensedataadd', {
         p_amount: Amount,
         p_dateoftrans: formattedDate,
         p_expensecode: TOE,
-        p_transcode: TOT
+        p_transcode: TOT,
+        p_descrp: Descrp
       });
 
       if (error2) {
@@ -123,8 +116,8 @@ const ContainerBody = () => {
       } else {
         toast.success("Saved successfully!");
         fetchData();
+       await  loadUsers();
         handleClose();
-
 
       }
     } catch (err) {
@@ -136,24 +129,61 @@ const ContainerBody = () => {
   /*Datatable -- start*/
   const columns = [
     {
-      title: 'Date',
-      data: null,
-      render: function (data, type, row) {
-        return `<a style="color:Blue" class="detVal">
-        <span  class="badge bg-success detVal">${data.dateoftrans}</span></a>`;
-      },
+      name: "Date",
+      selector: row => row.dateoftrans,
+      cell: row => (
+        <a style={{ color: "blue" }} className="detVal" onClick={() => handleDetailTransaction(row)} href="#">
+          <span className="badge bg-primary">{row.dateoftrans}</span>
+        </a>
+      ),
+      sortable: true,
     },
-    { title: "Amount", data: "amount" },
-    { title: "Expense", data: "expensename" },
-    { title: "Transaction", data: "transname" },
     {
-      title: 'Action',
-      data: null,
-      render: function (data, type, row) {
-        return `<a style="color:red" class="delval"><i class="bi bi-trash"></i></a>`;
-      },
+      name: "Amount",
+      selector: row => row.amount,
+      cell: row => (
+        <>
+          <span className="bi bi-currency-rupee"></span> {row.amount}
+        </>
+      ),
+      sortable: true,
     },
-  ]
+    {
+      name: "Expense",
+      selector: row => row.expensename,
+      sortable: true,
+    },
+    {
+      name: "Transaction",
+      selector: row => row.transcode,
+      cell: row =>
+        row.transcode === 1 ? (
+          <span className="badge bg-success">Credit</span>
+        ) : (
+          <span className="badge bg-danger">Debit</span>
+        ),
+      sortable: true,
+    },
+    {
+      name: "Description",
+      selector: row => row.descrp,
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: row => (
+        <a
+          style={{ color: "red", cursor: "pointer" }}
+          onClick={() => handleDeleteTransaction(row.autocode)}
+          className="delval"
+          href="#"
+        >
+          <i className="bi bi-trash"></i>
+        </a>
+      ),
+    },
+  ];
+
   /*Datatable -- End*/
 
 
@@ -171,19 +201,14 @@ const ContainerBody = () => {
     setdivUptBtn(true);
     setdivAddBtn(false);
     setAutoCode(data.autocode);
-
-
+    setDescrp(data.descrp);
   }
 
 
   /*Detail Function -- end*/
 
-
   /*Update function -- start*/
   const handleUpdateTransaction = async (data) => {
-
-
-
     /*Save Function -- End*/
     const year = Tdate.getFullYear();
     const month = String(Tdate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
@@ -191,14 +216,13 @@ const ContainerBody = () => {
 
     const formattedDate = `${year}-${month}-${day}`;
 
-
     try {
-      if (!Amount || !Tdate || !TOE || !TOT) {
+      if (!Amount || !Tdate || !TOE || !TOT || !Descrp) {
 
         toast.error('Please Fill The Field !')
         return;
       }
-      else if (autocode == null || autocode == '') {
+      else if (autocode === null || autocode === '') {
         toast.error('AutoCode is Empty !');
         return
       }
@@ -210,7 +234,8 @@ const ContainerBody = () => {
           p_amount: Amount,
           p_dateoftrans: formattedDate,
           p_expensecode: TOE,
-          p_transcode: TOT
+          p_transcode: TOT,
+          p_descrp: Descrp
         });
 
 
@@ -220,6 +245,7 @@ const ContainerBody = () => {
         } else {
           toast.success("Updated successfully!");
           fetchData();
+          await loadUsers();
           handleClose();
 
         }
@@ -229,7 +255,6 @@ const ContainerBody = () => {
       toast.error('Error', err);
     }
   }
-
 
   /*Update function -- End*/
 
@@ -253,6 +278,7 @@ const ContainerBody = () => {
       } else {
         toast.success("Deleted successfully!");
         fetchData();
+       await  loadUsers();
 
       }
     } catch (err) {
@@ -260,20 +286,12 @@ const ContainerBody = () => {
       toast.error('Error', err);
     }
   };
-
-
   /*Delete Function -- End */
-
-
-
   return (
     <>
 
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-
       {/* First Row */}
       < Grid container spacing={2} ></Grid>
-
       <Grid item xs={12}>
         {/* Header */}
         <AppBar position="static">
@@ -283,8 +301,6 @@ const ContainerBody = () => {
             </Typography>
           </Toolbar>
         </AppBar>
-
-
         <Fab
           onClick={handlePlusClick}
           color="primary"
@@ -294,20 +310,15 @@ const ContainerBody = () => {
             bottom: '20px',
             right: '20px',
           }}
-
         ><div style={{ fontSize: 35 }} >+</div>
         </Fab>
-
         {/* Main content container */}
-
         <Grid container spacing={6}>
-
           <Typography variant="body1">
             <Dialog open={open} onClose={handleClose}>
               <DialogTitle>Expense</DialogTitle>
               <DialogContent>
                 <br />
-
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -319,7 +330,6 @@ const ContainerBody = () => {
                         width={250}
                       />
                     </LocalizationProvider>
-
                   </Grid>
                   <Grid item xs={12}>
                     <Dropdown
@@ -352,92 +362,74 @@ const ContainerBody = () => {
                       width={200}
                     />
                   </Grid>
-                  <Grid item xs={8}>
-                    {divAddBtn ?
-                      <Button
-                        id='btnAdd'
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        onClick={handleAddTransaction}
-                      >Add +</Button>
-                      : null}
-                    {divUptBtn ? <Button
-                      id='btnUpdate'
-                      variant="contained"
-                      color="success"
-                      size="large"
-                      onClick={handleUpdateTransaction}
-                    >Update +</Button> : null}
-
-
+                  <Grid item xs={12}>
+                    <TextBox
+                      id="txtDescription"
+                      label="Description"
+                      value={Descrp}
+                      onChange={(e) => {
+                        setDescrp(e.target.value);
+                      }}
+                      placeholder="Enter your Description"
+                      width={250}
+                    />
                   </Grid>
-                </Grid>
 
+                </Grid>
               </DialogContent>
               <DialogActions>
+                <Grid item xs={8}>
+                  {divAddBtn ?
+                    <Button
+                      id='btnAdd'
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      onClick={handleAddTransaction}
+                    >Add +</Button>
+                    : null}
+                  {divUptBtn ? <Button
+                    id='btnUpdate'
+                    variant="contained"
+                    color="success"
+                    size="large"
+                    onClick={handleUpdateTransaction}
+                  >Update +</Button> : null}
+                </Grid>
                 <Button onClick={handleClose}>Close</Button>
               </DialogActions>
             </Dialog>
           </Typography>
-
           {/* DataTable */}
           <Grid container spacing={2}>
             <Grid item xs={12} >
               <h1>Expense Data</h1>
               {datalist.length === 0 ? (
-
                 <p>No data available.</p>
-              ) : (
+              ) : (<>
+                <DataTable
+                  columns={columns}
+                  data={datalist}
+                  pagination={false}
+                  highlightOnHover
+                  persistTableHead
+                  noHeader={true}
+                />
+                <TotalCntDrCr key={renderKey} />
+              </>
 
-                <div style={{ overflowX: 'auto', overflowY: 'auto', responsive: true, scrollY: '800px', }}>
-                  <DataTable
-                    data={datalist}
-                    columns={columns}
-                    className="table table-striped table-bordered"
-                    options={{
-                      scrollCollapse: true,
-                      autoWidth: false,
-                      searching: false,
-                      paging: false,
-                      order: [[0, 'desc']],
-                      rowCallback: function (row, data) {
-                        const delbtn = row.querySelector('.delval');
-                        delbtn.onclick = () => {
-                          handleDeleteTransaction(`${data.autocode}`);
-                        };
-                        const detbtn = row.querySelector('.detVal');
-                        detbtn.onclick = () => {
-                          handleDetailTransaction(data)
-                        }
-
-                      },
-                    }}
-
-                  />
-                </div>
               )}
-
             </Grid>
-
           </Grid>
         </Grid>
-
-
-
         {/* Footer */}
         <Box textAlign="center" pt={5}>
           <Typography variant="body2" color="textSecondary">
             © {new Date().getFullYear()} Your Company. All rights reserved.
           </Typography>
         </Box>
-
       </Grid>
-
     </>
   );
-
-
 };
-
 export default ContainerBody;
