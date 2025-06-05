@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Dropdown from './Utilities/InputControls/Dropdown';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { AppBar, Toolbar, Box, Fab, Grid, Typography } from '@mui/material';
@@ -13,8 +13,18 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DataTable from "react-data-table-component";
 import TotalCntDrCr from './Utilities/TotCntDrCr';
+import { debounce } from 'lodash';
 
 const ContainerBody = () => {
+
+
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const debouncedTriggerRefresh = useCallback(
+    debounce(() => {
+      setRefreshTrigger(prev => !prev);
+    }, 300), // adjust time if needed
+    []
+  );
 
   const [divUptBtn, setdivUptBtn] = useState(false);
   const [divAddBtn, setdivAddBtn] = useState(false);
@@ -25,9 +35,6 @@ const ContainerBody = () => {
   const [loading, setLoading] = useState(true);
   const [renderKey, setRenderKey] = useState(0);
 
- const loadUsers = () => {
-    setRenderKey(prevKey => prevKey + 1); // changes key => forces re-render
-  };
 
   const fetchData = async () => {
     try {
@@ -115,8 +122,8 @@ const ContainerBody = () => {
         toast.error("Insert Failed" + error2.message);
       } else {
         toast.success("Saved successfully!");
-        fetchData();
-       await  loadUsers();
+        await fetchData();
+        debouncedTriggerRefresh();
         handleClose();
 
       }
@@ -158,9 +165,9 @@ const ContainerBody = () => {
       selector: row => row.transcode,
       cell: row =>
         row.transcode === 1 ? (
-          <span className="badge bg-success">Credit</span>
+          <span className="badge bg-success w-45 text-center">Credit</span>
         ) : (
-          <span className="badge bg-danger">Debit</span>
+          <span className="badge bg-danger w-45 text-center">Debit</span>
         ),
       sortable: true,
     },
@@ -244,8 +251,8 @@ const ContainerBody = () => {
           toast.error("Update Failed" + errs.message);
         } else {
           toast.success("Updated successfully!");
-          fetchData();
-          await loadUsers();
+          await fetchData();
+          debouncedTriggerRefresh();
           handleClose();
 
         }
@@ -277,8 +284,8 @@ const ContainerBody = () => {
         toast.error("Deleted Failed" + error3.message);
       } else {
         toast.success("Deleted successfully!");
-        fetchData();
-       await  loadUsers();
+        await fetchData();
+        debouncedTriggerRefresh();
 
       }
     } catch (err) {
@@ -407,15 +414,21 @@ const ContainerBody = () => {
               {datalist.length === 0 ? (
                 <p>No data available.</p>
               ) : (<>
+                  <div className="card shadow p-1 mb-5 bg-white rounded">
+
                 <DataTable
                   columns={columns}
                   data={datalist}
-                  pagination={false}
+                  pagination={true}
                   highlightOnHover
                   persistTableHead
-                  noHeader={true}
+                  noHeader={true} 
+                   paginationPerPage={5}               
+                  paginationRowsPerPageOptions={[5, 10, 15, 20]}
+                 
                 />
-                <TotalCntDrCr key={renderKey} />
+                </div>
+                <TotalCntDrCr refresh={refreshTrigger} />
               </>
 
               )}
@@ -425,7 +438,7 @@ const ContainerBody = () => {
         {/* Footer */}
         <Box textAlign="center" pt={5}>
           <Typography variant="body2" color="textSecondary">
-            © {new Date().getFullYear()} Your Company. All rights reserved.
+            © {new Date().getFullYear()} Selva Sundar Pvt Ltd. All rights reserved.
           </Typography>
         </Box>
       </Grid>
