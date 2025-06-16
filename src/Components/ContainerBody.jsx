@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import Dropdown from './Utilities/InputControls/Dropdown';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { AppBar, Toolbar, Box, Fab, Grid, Typography } from '@mui/material';
@@ -8,23 +8,20 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { supabase } from '../supabaseClient'
-import { ToastContainer, toast } from 'react-toastify';
+import { supabase } from '../DBAccess/supabaseClient'
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DataTable from "react-data-table-component";
 import TotalCntDrCr from './Utilities/TotCntDrCr';
 import { debounce } from 'lodash';
+import FloatFilterBtn from './FloatFilterBtn';
+import TransactionTable from './TranactionTable';
+import Header from './Header'
+import Footer from './Footer';
+import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../DBAccess/DBconfunc";
+import sharedRef from './sharedRef';
 
 const ContainerBody = () => {
-
-
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const debouncedTriggerRefresh = useCallback(
-    debounce(() => {
-      setRefreshTrigger(prev => !prev);
-    }, 300), // adjust time if needed
-    []
-  );
 
   const [divUptBtn, setdivUptBtn] = useState(false);
   const [divAddBtn, setdivAddBtn] = useState(false);
@@ -32,29 +29,14 @@ const ContainerBody = () => {
   /*List function  -- start 1*/
 
   const [datalist, setDataList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [renderKey, setRenderKey] = useState(0);
-
 
   const fetchData = async () => {
-    try {
-      const { data: datalist, error: error1 } = await supabase.rpc("expensedatalist");
-
-      if (error1) {
-        console.error("Error:", error1);
-      } else {
-        setDataList(datalist || []);  // Ensure data is set correctly
-      }
-    } catch (error1) {
-      console.error("Request failed:", error1);
-    } finally {
-      setLoading(false);
-    }
+    const data = await TransactionList();
+    setDataList(data);
   };
   useEffect(() => {
     fetchData();
-  }, [])
-  /*List function  -- End*/
+  }, []);
 
   const [open, setOpen] = useState(false);
 
@@ -101,130 +83,33 @@ const ContainerBody = () => {
       toast.error('Please Fill The Field !')
       return;
     }
+    await ExpenseDataAdd(Amount, Tdate, TOE, TOT, Descrp);    
+      toast.success("Saved successfully!");
+      handleClose();  
 
-    /*Save Function -- End*/
-    const year = Tdate.getFullYear();
-    const month = String(Tdate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-    const day = String(Tdate.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
-    try {
-
-      const { data: Adddata, error: error2 } = await supabase.rpc('expensedataadd', {
-        p_amount: Amount,
-        p_dateoftrans: formattedDate,
-        p_expensecode: TOE,
-        p_transcode: TOT,
-        p_descrp: Descrp
-      });
-
-      if (error2) {
-
-        toast.error("Insert Failed" + error2.message);
-      } else {
-        toast.success("Saved successfully!");
-        await fetchData();
-        debouncedTriggerRefresh();
-        handleClose();
-
-      }
-    } catch (err) {
-
-      toast.error('Error', err);
-    }
-  };
-
-  /*Datatable -- start*/
-  const columns = [
-    {
-      name: "Date",
-      selector: row => row.dateoftrans,
-      cell: row => (
-        <a style={{ color: "blue" }} className="detVal" onClick={() => handleDetailTransaction(row)} href="#">
-          <span className="badge bg-primary">{row.dateoftrans}</span>
-        </a>
-      ),
-      sortable: true,
-    },
-    {
-      name: "Amount",
-      selector: row => row.amount,
-      cell: row => (
-        <>
-          <span className="bi bi-currency-rupee"></span> {row.amount}
-        </>
-      ),
-      sortable: true,
-    },
-    {
-      name: "Expense",
-      selector: row => row.expensename,
-      sortable: true,
-    },
-    {
-      name: "Transaction",
-      selector: row => row.transcode,
-      cell: row =>
-        row.transcode === 1 ? (
-          <span className="badge bg-success w-45 text-center">Credit</span>
-        ) : (
-          <span className="badge bg-danger w-45 text-center">Debit</span>
-        ),
-      sortable: true,
-    },
-    {
-      name: "Description",
-      selector: row => row.descrp,
-      sortable: true,
-    },
-    {
-      name: "Action",
-      cell: row => (
-        <a
-          style={{ color: "red", cursor: "pointer" }}
-          onClick={() => handleDeleteTransaction(row.autocode)}
-          className="delval"
-          href="#"
-        >
-          <i className="bi bi-trash"></i>
-        </a>
-      ),
-    },
-  ];
-
-  /*Datatable -- End*/
-
-
-  /*Detail Function -- start*/
+  }
 
   const [autocode, setAutoCode] = useState(null);
 
-  const handleDetailTransaction = async (data) => {
-    setOpen(true);
-    setAmount(data.amount);
-    setTOE(data.expensecode);
-    setTOT(data.transcode);
-    const parsedDate = new Date(data.dateoftrans);
-    setTDate(parsedDate);
-    setdivUptBtn(true);
-    setdivAddBtn(false);
-    setAutoCode(data.autocode);
-    setDescrp(data.descrp);
+  const detailbindFun = useCallback(() => detailbindControl());
+
+  function detailbindControl() {
+    const sysDateFormat = new Date(sharedRef.current[0].dateoftrans);
+    setdivUptBtn(sharedRef.current[1].showhide)
+    setOpen(sharedRef.current[1].showhide);
+    setAmount(sharedRef.current[0].amount);
+    setTDate(sysDateFormat);
+    setTOE(sharedRef.current[0].expensecode);
+    setTOT(sharedRef.current[0].transcode);
+    setDescrp(sharedRef.current[0].descrp);
   }
 
-
-  /*Detail Function -- end*/
-
-  /*Update function -- start*/
   const handleUpdateTransaction = async (data) => {
-    /*Save Function -- End*/
-    const year = Tdate.getFullYear();
-    const month = String(Tdate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-    const day = String(Tdate.getDate()).padStart(2, '0');
-
-    const formattedDate = `${year}-${month}-${day}`;
+    const autocode = sharedRef.current[0].autocode;
+    const formattedDate = new Date(Tdate);
 
     try {
-      if (!Amount || !Tdate || !TOE || !TOT || !Descrp) {
+      if (!Amount || !formattedDate || !TOE || !TOT || !Descrp) {
 
         toast.error('Please Fill The Field !')
         return;
@@ -235,27 +120,10 @@ const ContainerBody = () => {
       }
       else {
 
-        const { data: Deldata, error: errs } = await supabase.rpc('expensedetailupdate', {
-
-          p_autocode: autocode,
-          p_amount: Amount,
-          p_dateoftrans: formattedDate,
-          p_expensecode: TOE,
-          p_transcode: TOT,
-          p_descrp: Descrp
-        });
-
-
-        if (errs) {
-
-          toast.error("Update Failed" + errs.message);
-        } else {
-          toast.success("Updated successfully!");
-          await fetchData();
-          debouncedTriggerRefresh();
+         await ExpenseDataUpdate(autocode, Amount, formattedDate, TOE, TOT, Descrp);        
+          toast.success("Saved successfully!");          
           handleClose();
-
-        }
+       
       }
     } catch (err) {
 
@@ -263,62 +131,27 @@ const ContainerBody = () => {
     }
   }
 
-  /*Update function -- End*/
-
-  /*Delete Function -- Start*/
-
-  const handleDeleteTransaction = async (autocode) => {
-
-    if (!autocode) {
-      toast.error('Empty ExpenseCode!')
-      return;
-    }
-
-    try {
-      const { data: Deldata, error: error3 } = await supabase.rpc('expensedatadelete', {
-        p_autocode: autocode
-      });
-
-      if (error3) {
-
-        toast.error("Deleted Failed" + error3.message);
-      } else {
-        toast.success("Deleted successfully!");
-        await fetchData();
-        debouncedTriggerRefresh();
-
-      }
-    } catch (err) {
-
-      toast.error('Error', err);
-    }
-  };
-  /*Delete Function -- End */
   return (
     <>
+
 
       {/* First Row */}
       < Grid container spacing={2} ></Grid>
       <Grid item xs={12}>
         {/* Header */}
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div">
-              Project untitled
-            </Typography>
-          </Toolbar>
-        </AppBar>
+        <Header />
         <Fab
+          color={'primary'}
           onClick={handlePlusClick}
-          color="primary"
-          aria-label="add"
+          aria-label="AddTransaction"
           style={{
             position: 'fixed',
-            bottom: '20px',
-            right: '20px',
+            bottom: '120px',
+            right: '20px'
           }}
-        ><div style={{ fontSize: 35 }} >+</div>
+        ><div style={{ fontSize: 35 }} > <i className="bi bi-plus" style={{ fontSize: 35, }}></i></div>
         </Fab>
+
         {/* Main content container */}
         <Grid container spacing={6}>
           <Typography variant="body1">
@@ -395,13 +228,15 @@ const ContainerBody = () => {
                       onClick={handleAddTransaction}
                     >Add +</Button>
                     : null}
-                  {divUptBtn ? <Button
-                    id='btnUpdate'
-                    variant="contained"
-                    color="success"
-                    size="large"
-                    onClick={handleUpdateTransaction}
-                  >Update +</Button> : null}
+                  {divUptBtn ?
+                    <Button
+                      id='btnUpdate'
+                      variant="contained"
+                      color="success"
+                      size="large"
+                      onClick={handleUpdateTransaction}
+                    >Update +</Button>
+                    : null}
                 </Grid>
                 <Button onClick={handleClose}>Close</Button>
               </DialogActions>
@@ -414,34 +249,18 @@ const ContainerBody = () => {
               {datalist.length === 0 ? (
                 <p>No data available.</p>
               ) : (<>
-                  <div className="card shadow p-1 mb-5 bg-white rounded">
-
-                <DataTable
-                  columns={columns}
-                  data={datalist}
-                  pagination={true}
-                  highlightOnHover
-                  persistTableHead
-                  noHeader={true} 
-                   paginationPerPage={5}               
-                  paginationRowsPerPageOptions={[5, 10, 15, 20]}
-                 
-                />
-                </div>
-                <TotalCntDrCr refresh={refreshTrigger} />
+                <TransactionTable onDetail={detailbindFun} />
+                <TotalCntDrCr />
+                <FloatFilterBtn />
               </>
-
               )}
             </Grid>
           </Grid>
         </Grid>
         {/* Footer */}
-        <Box textAlign="center" pt={5}>
-          <Typography variant="body2" color="textSecondary">
-            © {new Date().getFullYear()} Selva Sundar Pvt Ltd. All rights reserved.
-          </Typography>
-        </Box>
-      </Grid>
+
+        <Footer />
+      </Grid >
     </>
   );
 };
