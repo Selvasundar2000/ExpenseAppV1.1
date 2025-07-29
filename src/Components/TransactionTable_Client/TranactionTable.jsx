@@ -4,8 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { TransactionList, TransactionDelete, totalexpensecount } from "../DBAccess/DBconfunc";
-import sharedRef from "./sharedRef";
+import { TransactionList, TransactionDelete, totalexpensecount } from "../../services/DBconfunc";
+import sharedRef from "../../lib/sharedRef";
 
 export default function TransactionTable({ RefreshTransTbl, onDetail,setRefreshTotalCount }) {
     const [datalist, setDataList] = useState('');

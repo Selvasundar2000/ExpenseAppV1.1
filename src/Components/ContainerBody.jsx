@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import Dropdown from './Utilities/InputControls/Dropdown';
+import Dropdown from './InputControls/Dropdown';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { AppBar, Toolbar, Box, Fab, Grid, Typography } from '@mui/material';
 import TextBox from '@mui/material/TextField';
@@ -10,14 +10,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import TotalCntDrCr from './Utilities/TotCntDrCr';
+import TotalCntDrCr from '../components/TransactionTable_Client/TotCntDrCr'
 import FloatFilterBtn from './FloatFilterBtn';
-import TransactionTable from './TranactionTable';
+import TransactionTable from './TransactionTable_Client/TranactionTable';
 import Header from './Header'
 import Footer from './Footer';
 import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../DBAccess/DBconfunc";
-import sharedRef from './sharedRef';
-import { formatDate } from './formatDate';
+import sharedRef from '../lib/sharedRef';
+import { formatDate } from '../lib/formatDate';
 
 const ContainerBody = () => {
 
