@@ -8,18 +8,16 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { supabase } from '../DBAccess/supabaseClient'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import DataTable from "react-data-table-component";
 import TotalCntDrCr from './Utilities/TotCntDrCr';
-import { debounce } from 'lodash';
 import FloatFilterBtn from './FloatFilterBtn';
 import TransactionTable from './TranactionTable';
 import Header from './Header'
 import Footer from './Footer';
 import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../DBAccess/DBconfunc";
 import sharedRef from './sharedRef';
+import { formatDate } from './formatDate';
 
 const ContainerBody = () => {
 
@@ -29,14 +27,26 @@ const ContainerBody = () => {
   /*List function  -- start 1*/
 
   const [datalist, setDataList] = useState([]);
+ 
+  
+  const [RefreshTransTbl, setRefreshTransTbl] = useState(false); 
+  const [RefreshTotTbl, setRefreshTotTbl] = useState(false); 
+
+  const [RefreshTotalCount, setRefreshTotalCount] = useState(''); 
+
+   function refreshTransTable(){
+  setRefreshTransTbl(prev => !prev);
+  setRefreshTotTbl(prev => !prev);
+  }
+
 
   const fetchData = async () => {
     const data = await TransactionList();
     setDataList(data);
   };
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData();    
+  }, [RefreshTransTbl,RefreshTotTbl]);
 
   const [open, setOpen] = useState(false);
 
@@ -45,6 +55,13 @@ const ContainerBody = () => {
     setdivUptBtn(false);
     setdivAddBtn(true);
   };
+
+  const handleUpdateClick = () => {
+    setOpen(true);
+    setdivUptBtn(true);
+    setdivAddBtn(false);
+  };
+  
 
   const handleClose = () => {
     setAmount('');
@@ -78,15 +95,16 @@ const ContainerBody = () => {
 
   /*Save function -- start*/
   const handleAddTransaction = async () => {
+    var formattedDate= formatDate(Tdate);
 
-    if (!Amount || !Tdate || !TOE || !TOT || !Descrp) {
+    if (!Amount || !formattedDate || !TOE || !TOT || !Descrp) {
       toast.error('Please Fill The Field !')
       return;
-    }
-    await ExpenseDataAdd(Amount, Tdate, TOE, TOT, Descrp);    
-      toast.success("Saved successfully!");
-      handleClose();  
-
+    }   
+    await ExpenseDataAdd(Amount, formattedDate, TOE, TOT, Descrp);
+    refreshTransTable();
+    toast.success("Saved successfully!");    
+    handleClose();
   }
 
   const [autocode, setAutoCode] = useState(null);
@@ -95,18 +113,19 @@ const ContainerBody = () => {
 
   function detailbindControl() {
     const sysDateFormat = new Date(sharedRef.current[0].dateoftrans);
-    setdivUptBtn(sharedRef.current[1].showhide)
-    setOpen(sharedRef.current[1].showhide);
+    handleUpdateClick();
     setAmount(sharedRef.current[0].amount);
     setTDate(sysDateFormat);
     setTOE(sharedRef.current[0].expensecode);
     setTOT(sharedRef.current[0].transcode);
     setDescrp(sharedRef.current[0].descrp);
+    
   }
 
   const handleUpdateTransaction = async (data) => {
+  
     const autocode = sharedRef.current[0].autocode;
-    const formattedDate = new Date(Tdate);
+    const formattedDate = formatDate(Tdate);;
 
     try {
       if (!Amount || !formattedDate || !TOE || !TOT || !Descrp) {
@@ -119,11 +138,11 @@ const ContainerBody = () => {
         return
       }
       else {
+        await ExpenseDataUpdate(autocode, Amount, formattedDate, TOE, TOT, Descrp);
+        refreshTransTable();
+        toast.success("Saved successfully!");       
+        handleClose();
 
-         await ExpenseDataUpdate(autocode, Amount, formattedDate, TOE, TOT, Descrp);        
-          toast.success("Saved successfully!");          
-          handleClose();
-       
       }
     } catch (err) {
 
@@ -249,8 +268,9 @@ const ContainerBody = () => {
               {datalist.length === 0 ? (
                 <p>No data available.</p>
               ) : (<>
-                <TransactionTable onDetail={detailbindFun} />
-                <TotalCntDrCr />
+                <TransactionTable RefreshTransTbl={RefreshTransTbl} onDetail={detailbindFun} setRefreshTotalCount={setRefreshTotalCount}
+                  />
+                <TotalCntDrCr RefreshTotTbl={RefreshTotTbl} RefreshTotalCount={RefreshTotalCount}  />
                 <FloatFilterBtn />
               </>
               )}
