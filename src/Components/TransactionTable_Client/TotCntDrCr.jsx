@@ -19,7 +19,7 @@ export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount}) {
 
     const columns = [
         {
-            name: "Total Credit",
+            name: "Total Credits",
             selector: row => <span style={{ color: 'green', fontWeight: 'bold' }}> ₹&nbsp;{currencyFormat(row.total_credit)}</span>,
             sortable: false,
         },
