@@ -1,10 +1,9 @@
-import { supabase } from '/ExpenseApp/expenseapp/src/DBAccess/supabaseClient'
 import { useState, useEffect, useCallback } from 'react';
 import DataTable from "react-data-table-component";
 import { currencyFormat } from '../currencyFormat';
 import { totalexpensecount } from '../../DBAccess/DBconfunc';
 
-export default function TotalCntDrCr({Refreshdata}) {
+export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount}) {
     const [datalist, setDataList] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -15,7 +14,7 @@ export default function TotalCntDrCr({Refreshdata}) {
     };
     useEffect(() => {
         fetchData();
-    }, [])
+    }, [RefreshTotTbl,RefreshTotalCount])
 
 
     const columns = [

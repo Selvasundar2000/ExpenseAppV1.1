@@ -85,6 +85,7 @@ export const ExpenseDataAdd = async (Amount,formattedDate,TOE,TOT,Descrp) => {
 export const ExpenseDataUpdate = async (autocode,Amount,formattedDate,TOE,TOT,Descrp) => {
 
   try {
+   
     const { data: Adddata, error: error2 } = await supabase.rpc('expensedetailupdate', {
       p_autocode:autocode,
       p_amount: Amount,

@@ -4,28 +4,29 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { TransactionList, TransactionDelete } from "../DBAccess/DBconfunc";
+import { TransactionList, TransactionDelete, totalexpensecount } from "../DBAccess/DBconfunc";
 import sharedRef from "./sharedRef";
 
-export default function TransactionTable({ onDetail }) {
+export default function TransactionTable({ RefreshTransTbl, onDetail,setRefreshTotalCount }) {
     const [datalist, setDataList] = useState('');
-
     const fetchData = async () => {
         const data = await TransactionList();
         setDataList(data);
     };
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [RefreshTransTbl]);
     const handleDeleteTransaction = async (autocode) => {
         if (!autocode) {
             toast.error('Empty ExpenseCode!')
             return;
         }
-        await TransactionDelete(autocode);  
+        await TransactionDelete(autocode);
+        setDataList(prev => prev.filter(item => item.autocode !== autocode)); // Refresh the data      
+       setRefreshTotalCount(prev=>!prev);
     };
     const handleDetailTransaction = async (data) => {
-        sharedRef.current = [data, { "showhide": true }];
+        sharedRef.current = [data];
         onDetail();
     }
 
@@ -92,7 +93,7 @@ export default function TransactionTable({ onDetail }) {
         {datalist.length === 0 ? (
             <p>No data available.</p>
         ) : (<>
-            {/* <ContainerBody test={'hello world'} />*/}
+
             <div className="card shadow p-1 mb-5 bg-white rounded">
                 <DataTable
                     columns={columns}
