@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import DataTable from "react-data-table-component";
 import { currencyFormat } from '../../lib/currencyFormat';
-import { totalexpensecount } from '../../DBAccess/DBconfunc';
+import { totalexpensecount } from '../../services/DBconfunc';
 
 export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount}) {
     const [datalist, setDataList] = useState([]);

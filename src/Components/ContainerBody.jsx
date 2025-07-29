@@ -10,12 +10,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import TotalCntDrCr from '../components/TransactionTable_Client/TotCntDrCr'
-import FloatFilterBtn from './FloatFilterBtn';
+import TotalCntDrCr from './TransactionTable_Client/TotCntDrCr'
+import FloatFilterBtn from './InputControls/FloatFilterBtn';
 import TransactionTable from './TransactionTable_Client/TranactionTable';
-import Header from './Header'
-import Footer from './Footer';
-import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../DBAccess/DBconfunc";
+import Header from '../layouts/Header'
+import Footer from '../layouts/Footer';
+import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../services/DBconfunc";
 import sharedRef from '../lib/sharedRef';
 import { formatDate } from '../lib/formatDate';
 
