@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import Dropdown from './InputControls/Dropdown';
+import React, { useState, useEffect, useCallback } from 'react';
+// import Dropdown from './InputControls/Dropdown';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { AppBar, Toolbar, Box, Fab, Grid, Typography } from '@mui/material';
-import TextBox from '@mui/material/TextField';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { Box, Fab, Grid } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { toast } from 'react-toastify';
@@ -17,36 +13,38 @@ import Header from '../layouts/Header'
 import Footer from '../layouts/Footer';
 import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../services/DBconfunc";
 import sharedRef from '../lib/sharedRef';
-import { formatDate } from '../lib/formatDate';
+import { TextInput, Dropdown, DateInput, } from './InputControls/MuiFormControls';
+import { formFields } from '../components/FormFieldsConfig/formConfig_AddTrans';
+import { parseDateToISO } from '../lib/parseDateToISO';
 
 const ContainerBody = () => {
+  const [FilterDateUpdate, setFilterDateUpdate] = useState('');
+  const [FilterCountUpdate, setFilterCountUpdate] = useState('');
 
+  const [formData, setFormData] = useState({});
   const [divUptBtn, setdivUptBtn] = useState(false);
   const [divAddBtn, setdivAddBtn] = useState(false);
 
   /*List function  -- start 1*/
 
-  const [datalist, setDataList] = useState([]);
- 
-  
-  const [RefreshTransTbl, setRefreshTransTbl] = useState(false); 
-  const [RefreshTotTbl, setRefreshTotTbl] = useState(false); 
+  const [RefreshTransTbl, setRefreshTransTbl] = useState(false);
+  const [RefreshTotTbl, setRefreshTotTbl] = useState(false);
 
-  const [RefreshTotalCount, setRefreshTotalCount] = useState(''); 
+  const [RefreshTotalCount, setRefreshTotalCount] = useState('');
 
-   function refreshTransTable(){
-  setRefreshTransTbl(prev => !prev);
-  setRefreshTotTbl(prev => !prev);
+
+  function refreshTransTable() {
+    setRefreshTransTbl(prev => !prev);
+    setRefreshTotTbl(prev => !prev);
   }
 
 
   const fetchData = async () => {
-    const data = await TransactionList();
-    setDataList(data);
+    await TransactionList();
   };
   useEffect(() => {
-    fetchData();    
-  }, [RefreshTransTbl,RefreshTotTbl]);
+    fetchData();
+  }, [RefreshTransTbl, RefreshTotTbl]);
 
   const [open, setOpen] = useState(false);
 
@@ -61,74 +59,49 @@ const ContainerBody = () => {
     setdivUptBtn(true);
     setdivAddBtn(false);
   };
-  
+
 
   const handleClose = () => {
-    setAmount('');
-    setTDate(null);
-    setTOE('');
-    setTOT('');
-    setDescrp('');
     setOpen(false);
-    setAutoCode(null);
+    setFormData({});
   };
-  const [Amount, setAmount] = useState('');
-  const [Tdate, setTDate] = useState(null);
-  const [TOE, setTOE] = useState('');
-  const [TOT, setTOT] = useState('');
-  const [Descrp, setDescrp] = useState('');
 
-  const TypesOfExpenses = [
-    { value: 1, label: 'Food' },
-    { value: 2, label: 'Housing' },
-    { value: 3, label: 'Groceries' },
-    { value: 4, label: 'Travel' },
-    { value: 5, label: 'Medical' },
-    { value: 6, label: 'Entertainment' },
-    { value: 7, label: 'Other Expenses' }
-  ];
-
-  const TypeOfTransactioon = [
-    { value: 1, label: "Credit" },
-    { value: 2, label: "Debit" },
-  ]
 
   /*Save function -- start*/
   const handleAddTransaction = async () => {
-    var formattedDate= formatDate(Tdate);
 
-    if (!Amount || !formattedDate || !TOE || !TOT || !Descrp) {
+    if (!formData.Amount || !formData.Tdate || !formData.TOE || !formData.TOT || !formData.Descrp) {
       toast.error('Please Fill The Field !')
       return;
-    }   
-    await ExpenseDataAdd(Amount, formattedDate, TOE, TOT, Descrp);
+    }
+    await ExpenseDataAdd(formData.Amount, formData.Tdate, formData.TOE, formData.TOT, formData.Descrp);
     refreshTransTable();
-    toast.success("Saved successfully!");    
     handleClose();
   }
 
-  const [autocode, setAutoCode] = useState(null);
 
   const detailbindFun = useCallback(() => detailbindControl());
 
   function detailbindControl() {
-    const sysDateFormat = new Date(sharedRef.current[0].dateoftrans);
     handleUpdateClick();
-    setAmount(sharedRef.current[0].amount);
-    setTDate(sysDateFormat);
-    setTOE(sharedRef.current[0].expensecode);
-    setTOT(sharedRef.current[0].transcode);
-    setDescrp(sharedRef.current[0].descrp);
-    
+
+    var formDateConvert = (parseDateToISO(sharedRef.current[0].dateoftrans));
+
+    formData.Amount = (sharedRef.current[0].amount);
+    formData.Tdate = (formDateConvert);
+    formData.TOE = (sharedRef.current[0].expensecode);
+    formData.TOT = (sharedRef.current[0].transcode);
+    formData.Descrp = (sharedRef.current[0].descrp);
+
   }
 
   const handleUpdateTransaction = async (data) => {
-  
+
     const autocode = sharedRef.current[0].autocode;
-    const formattedDate = formatDate(Tdate);;
+    const formattedDate = parseDateToISO(formData.Tdate);;
 
     try {
-      if (!Amount || !formattedDate || !TOE || !TOT || !Descrp) {
+      if (!formData.Amount || !formattedDate || !formData.TOE || !formData.TOT || !formData.Descrp) {
 
         toast.error('Please Fill The Field !')
         return;
@@ -138,9 +111,8 @@ const ContainerBody = () => {
         return
       }
       else {
-        await ExpenseDataUpdate(autocode, Amount, formattedDate, TOE, TOT, Descrp);
+        await ExpenseDataUpdate(autocode, formData.Amount, formattedDate, formData.TOE, formData.TOT, formData.Descrp);
         refreshTransTable();
-        toast.success("Saved successfully!");       
         handleClose();
 
       }
@@ -149,139 +121,201 @@ const ContainerBody = () => {
       toast.error('Error', err);
     }
   }
+  const fieldTypeByKey = formFields.reduce((acc, field) => {
+    acc[field.key] = field.type;
+    return acc;
+  }, {});
+  const handleChange = (key, value) => {
+    if (fieldTypeByKey[key] === 'checkbox') {
+      setFormData((prev) => {
+        const existing = prev[key] || [];
+        const updated = existing.includes(value)
+          ? existing.filter((v) => v !== value)
+          : [...existing, value];
+        return { ...prev, [key]: updated };
+      });
+    } else {
+      setFormData((prev) => ({ ...prev, [key]: value }));
+    }
+  };
 
-  return (
-    <>
+  const inputComponents = {
+    text: TextInput,
+    date: DateInput,
+    dropdown: Dropdown
+  };
 
+  return (<>
 
-      {/* First Row */}
-      < Grid container spacing={2} ></Grid>
-      <Grid item xs={12}>
-        {/* Header */}
-        <Header />
-        <Fab
-          color={'primary'}
-          onClick={handlePlusClick}
-          aria-label="AddTransaction"
-          style={{
-            position: 'fixed',
-            bottom: '120px',
-            right: '20px'
-          }}
-        ><div style={{ fontSize: 35 }} > <i className="bi bi-plus" style={{ fontSize: 35, }}></i></div>
-        </Fab>
+    {/* Header */}
+    <Header />
+    <Fab
+      color={'primary'}
+      onClick={handlePlusClick}
+      aria-label="AddTransaction"
+      style={{
+        position: 'fixed',
+        bottom: '120px',
+        right: '20px'
+      }}
+    ><div style={{ fontSize: 35 }} > <i className="bi bi-plus" style={{ fontSize: 35, }}></i></div>
+    </Fab>
 
-        {/* Main content container */}
-        <Grid container spacing={6}>
-          <Typography variant="body1">
-            <Dialog open={open} onClose={handleClose}>
-              <DialogTitle>Expense</DialogTitle>
-              <DialogContent>
-                <br />
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                      <DatePicker
-                        label="Select Start Date"
-                        value={Tdate}
-                        format={"dd-MMM-yyyy"}
-                        onChange={(newDate) => setTDate(newDate)}
-                        width={250}
-                      />
-                    </LocalizationProvider>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Dropdown
-                      id="drTypeOfExpense"
-                      label="Type of expense"
-                      options={TypesOfExpenses}
-                      value={TOE}
-                      onChange={(e) => setTOE(e.target.value)}
-                      width={200}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextBox
-                      id="txtAmount"
-                      label="Amount"
-                      value={Amount}
-                      onChange={(e) => {
-                        setAmount(e.target.value);
-                      }}
-                      placeholder="Enter your Amount in ₹"
-                      width={250}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Dropdown
-                      label="Type of Transaction"
-                      options={TypeOfTransactioon}
-                      value={TOT}
-                      onChange={(e) => setTOT(e.target.value)}
-                      width={200}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextBox
-                      id="txtDescription"
-                      label="Description"
-                      value={Descrp}
-                      onChange={(e) => {
-                        setDescrp(e.target.value);
-                      }}
-                      placeholder="Enter your Description"
-                      width={250}
-                    />
-                  </Grid>
+    {/* Popup content */}
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
+      <DialogTitle>Expense</DialogTitle>
 
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Grid item xs={8}>
-                  {divAddBtn ?
-                    <Button
-                      id='btnAdd'
-                      variant="contained"
-                      color="primary"
-                      size="large"
-                      onClick={handleAddTransaction}
-                    >Add +</Button>
-                    : null}
-                  {divUptBtn ?
-                    <Button
-                      id='btnUpdate'
-                      variant="contained"
-                      color="success"
-                      size="large"
-                      onClick={handleUpdateTransaction}
-                    >Update +</Button>
-                    : null}
-                </Grid>
-                <Button onClick={handleClose}>Close</Button>
-              </DialogActions>
-            </Dialog>
-          </Typography>
-          {/* DataTable */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} >
-              <h1>Expense Data</h1>
-              {datalist.length === 0 ? (
-                <p>No data available.</p>
-              ) : (<>
-                <TransactionTable RefreshTransTbl={RefreshTransTbl} onDetail={detailbindFun} setRefreshTotalCount={setRefreshTotalCount}
+      <DialogContent dividers>
+        <Grid container spacing={2}>
+          {formFields.map((field) => {
+            const Component = inputComponents[field.type];
+            if (!Component) return null;
+
+            const gridSize = field.gridSize || 6;
+
+            return (
+              <Grid item xs={12} sm={gridSize} key={field.key}>
+                {field.type === 'checkbox' ? (
+                  <Component
+                    label={field.label}
+                    selectedValues={formData[field.key] || []}
+                    onChange={(value) => handleChange(field.key, value)}
+                    options={field.options}
                   />
-                <TotalCntDrCr RefreshTotTbl={RefreshTotTbl} RefreshTotalCount={RefreshTotalCount}  />
-                <FloatFilterBtn />
-              </>
-              )}
-            </Grid>
-          </Grid>
+                ) : field.type === 'radio' ? (
+                  <Component
+                    label={field.label}
+                    name={field.key}
+                    value={formData[field.key] || ''}
+                    onChange={(e) => handleChange(field.key, e.target.value)}
+                    options={field.options}
+                  />
+                ) : (
+                  <Component
+                    label={field.label}
+                    value={formData[field.key] || ''}
+                    onChange={(e) => handleChange(field.key, e.target.value)}
+                    placeholder={field.placeholder}
+                    name={field.key}
+                    options={field.options}
+                  />
+                )}
+              </Grid>
+            );
+          })}
         </Grid>
-        {/* Footer */}
+      </DialogContent>
 
-        <Footer />
-      </Grid >
-    </>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        {divAddBtn && (
+          <Button
+            id="btnAdd"
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={handleAddTransaction}
+          >
+            ADD +
+          </Button>
+        )}
+        {divUptBtn && (
+          <Button
+            id="btnUpdate"
+            variant="contained"
+            color="success"
+            size="large"
+            onClick={handleUpdateTransaction}
+          >
+            UPDATE +
+          </Button>
+        )}
+        <Button onClick={handleClose} color="inherit">
+          CLOSE
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+
+    {/* <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Expense</DialogTitle>
+        <DialogContent>
+          <br />         
+
+          {formFields.map((field) => {
+        const Component = inputComponents[field.type];
+        if (!Component) return null;
+
+        if (field.type === 'checkbox') {
+          return (
+            <Component
+              key={field.key}
+              label={field.label}
+              selectedValues={formData[field.key] || []}
+              onChange={(value) => handleChange(field.key, value)}
+              options={field.options}
+            />
+          );
+        }
+        return (
+          <Component
+            key={field.key}
+            label={field.label}
+            value={formData[field.key] || ''}
+            onChange={(e) => handleChange(field.key, e.target.value)}
+            placeholder={field.placeholder}
+            name={field.key}
+            options={field.options}
+          />
+        );
+      })}
+
+        </DialogContent>
+        <DialogActions>
+          <Grid item xs={8}>
+            {divAddBtn ?
+              <Button
+                id='btnAdd'
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={handleAddTransaction}
+              >Add +</Button>
+              : null}
+            {divUptBtn ?
+              <Button
+                id='btnUpdate'
+                variant="contained"
+                color="success"
+                size="large"
+                onClick={handleUpdateTransaction}
+              >Update +</Button>
+              : null}
+          </Grid>
+          <Button onClick={handleClose}>Close</Button>
+        </DialogActions>
+      </Dialog> */}
+
+
+    {/* DataTable */}
+    <Box sx={{ p: { xs: 2, sm: 3, md: 14 } }}>
+      <Grid container spacing={2} >
+        <Grid item xs={12} md={2} >
+          <TransactionTable RefreshTransTbl={RefreshTransTbl} onDetail={detailbindFun} setRefreshTotalCount={setRefreshTotalCount} FilterDateUpdate={FilterDateUpdate}
+          />
+        </Grid>
+        <Grid item xs={12} md={10}>
+          <TotalCntDrCr RefreshTotTbl={RefreshTotTbl} RefreshTotalCount={RefreshTotalCount}
+            FilterCountUpdate={FilterCountUpdate}
+          />
+        </Grid>
+      </Grid>
+      <FloatFilterBtn setFilterDateUpdate={setFilterDateUpdate} setFilterCountUpdate={setFilterCountUpdate} />
+
+    </Box>
+    {/* Footer */}
+    <Footer />
+
+  </>
   );
 };
 export default ContainerBody;

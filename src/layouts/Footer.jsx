@@ -1,12 +1,24 @@
 import React from "react";
-import { Box } from "@mui/material";
-import {Typography} from "@mui/material";
-export default function Footer(){
-    return(<>
-      <Box textAlign="center" pt={5}>
-              <Typography variant="body2" color="textSecondary">
-                © {new Date().getFullYear()} Selva Sundar Pvt Ltd. All rights reserved.
-              </Typography>
-            </Box>
-    </>)
+import { Box, Typography } from "@mui/material";
+
+export default function Footer() {
+  return (
+    <Box
+      component="footer"
+      sx={{
+        py: 2,
+        px: 2,
+        mt: "auto",              
+        backgroundColor: (theme) =>
+          theme.palette.mode === "light"
+            ? theme.palette.grey[200]
+            : theme.palette.grey[800],
+        textAlign: "center",
+      }}
+    >
+      <Typography variant="body2" color="text.secondary">
+        © {new Date().getFullYear()} Selva Sundar All rights reserved.
+      </Typography>
+    </Box>
+  );
 }

@@ -1,21 +1,30 @@
 import DataTable from "react-data-table-component";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { TransactionList, TransactionDelete, totalexpensecount } from "../../services/DBconfunc";
+import { TransactionList, TransactionDelete } from "../../services/DBconfunc";
 import sharedRef from "../../lib/sharedRef";
 
-export default function TransactionTable({ RefreshTransTbl, onDetail,setRefreshTotalCount }) {
+export default function TransactionTable({ RefreshTransTbl, onDetail, setRefreshTotalCount, FilterDateUpdate }) {
+
     const [datalist, setDataList] = useState('');
+
     const fetchData = async () => {
         const data = await TransactionList();
         setDataList(data);
     };
     useEffect(() => {
-        fetchData();
-    }, [RefreshTransTbl]);
+        if (FilterDateUpdate === '') {
+            fetchData();            
+        }
+        else {
+            setDataList(FilterDateUpdate);                       
+        }
+
+    }, [RefreshTransTbl, FilterDateUpdate]);
+
     const handleDeleteTransaction = async (autocode) => {
         if (!autocode) {
             toast.error('Empty ExpenseCode!')
@@ -23,7 +32,7 @@ export default function TransactionTable({ RefreshTransTbl, onDetail,setRefreshT
         }
         await TransactionDelete(autocode);
         setDataList(prev => prev.filter(item => item.autocode !== autocode)); // Refresh the data      
-       setRefreshTotalCount(prev=>!prev);
+        setRefreshTotalCount(prev => !prev);
     };
     const handleDetailTransaction = async (data) => {
         sharedRef.current = [data];
@@ -88,27 +97,22 @@ export default function TransactionTable({ RefreshTransTbl, onDetail,setRefreshT
             ),
         },
     ];
-
     return (<>
-        {datalist.length === 0 ? (
-            <p>No data available.</p>
-        ) : (<>
 
-            <div className="card shadow p-1 mb-5 bg-white rounded">
-                <DataTable
-                    columns={columns}
-                    data={datalist}
-                    pagination={true}
-                    highlightOnHover
-                    persistTableHead
-                    noHeader={true}
-                    paginationPerPage={5}
-                    paginationRowsPerPageOptions={[5, 10, 15, 20]}
-                />
-            </div>
-        </>
-        )}
+        <div className="card shadow p-1 mb-5 bg-white rounded">
+            <DataTable
+                columns={columns}
+                data={datalist}
+                pagination={true}
+                highlightOnHover
+                persistTableHead
+                noHeader={true}
+                paginationPerPage={5}
+                paginationRowsPerPageOptions={[5, 10, 15, 20]}
+            />
+        </div>
     </>
+
     )
 
 }

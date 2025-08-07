@@ -1,17 +1,127 @@
-import React,{useState} from "react";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Box } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Grid, Radio } from "@mui/material";
 import Fab from "@mui/material/Fab";
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import {
+    DateInput,
+    MuiRadioGroup
+} from './MuiFormControls';
+import { formFields } from '../FormFieldsConfig/formConfig_DateFilter';
+import { Button } from '@mui/material';
+import { datefilterexpense } from "../../services/DBconfunc";
+import { toast } from "react-toastify";
 
-export default function FloatFilterBtn() {
-     const [fabopen, setfabOpen] = useState(false);
-    
-      const handleToggle = () => setfabOpen(prev => !prev);  
+export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpdate }) {
+    const [fabopen, setfabOpen] = useState(false);
+    const [filterDateopen, setfilterDateopen] = useState(false);
+    const handleFilterDate = () => {
+        setfabOpen(prev => !prev);
+        setfilterDateopen(true);
+    }
 
+    const handleclose = () => {
+        setfilterDateopen(false);
+        setFormData('');
+    }
+    const [formData, setFormData] = useState({});
+
+    const inputComponents = {
+        date: DateInput,
+        radio: MuiRadioGroup
+    };
+
+    const fieldTypeByKey = formFields.reduce((acc, field) => {
+        acc[field.key] = field.type;
+        return acc;
+    }, {});
+    const handleChange = (key, value) => {
+        if (fieldTypeByKey[key] === 'checkbox') {
+            setFormData((prev) => {
+                const existing = prev[key] || [];
+                const updated = existing.includes(value)
+                    ? existing.filter((v) => v !== value)
+                    : [...existing, value];
+                return { ...prev, [key]: updated };
+            });
+        } else {
+            setFormData((prev) => ({ ...prev, [key]: value }));
+        }
+    };
+
+    const handleSubmit = async () => {
+        var filStartDate = new Date(formData.FilterStartDate);
+        var filEndDate = new Date(formData.FilterEndDate);
+        var filtranscode = formData.FilterTOT;
+         if (!filStartDate || !filEndDate || !filtranscode) {
+            toast.error('Please Fill All the Fields!');
+            return        
+        }
+        var originalRows = await datefilterexpense(filStartDate, filEndDate,filtranscode);       
+        
+        if (originalRows.length == 0 ) {
+            toast.error('No Data Found for the selected date range!');
+            return
+        }
+        setFilterDateUpdate(originalRows);
+        var CountfilteredData = originalRows.map(item => ({
+            total_credit: item.total_credit,
+            total_debit: item.total_debit,
+            total_transamount: item.total_transamount
+        }));
+        var CntFltDt = CountfilteredData[0]
+        setFilterCountUpdate([CntFltDt])
+    }
 
     return (<>
+        <Dialog open={filterDateopen} onClose={handleclose}>
+            <DialogTitle>Filter</DialogTitle>
+            <DialogContent>
+                <br />
+
+                {formFields.map((field) => {
+                    const Component = inputComponents[field.type];
+                    if (!Component) return null;
+
+                    if (field.type === 'checkbox') {
+                        return (
+                            <Component
+                                key={field.key}
+                                label={field.label}
+                                selectedValues={formData[field.key] || []}
+                                onChange={(value) => handleChange(field.key, value)}
+                                options={field.options}
+                            />
+                        );
+                    }
+                    return (
+                        <Component
+                            key={field.key}
+                            label={field.label}
+                            value={formData[field.key] || ''}
+                            onChange={(e) => handleChange(field.key, e.target.value)}
+                            placeholder={field.placeholder}
+                            name={field.key}
+                            options={field.options}
+                        />
+                    );
+                })}
+
+            </DialogContent>
+            <DialogActions>
+                <Grid item xs={8}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        onClick={handleSubmit}
+                    >Filter</Button>
+                </Grid>
+                <Button onClick={handleclose}>Close</Button>
+            </DialogActions>
+
+        </Dialog>
         <Fab
-            onClick={handleToggle}
+            onClick={handleFilterDate}
             aria-label="Filter"
             style={{
                 position: 'fixed',
@@ -22,22 +132,6 @@ export default function FloatFilterBtn() {
             }}
         ><div style={{ fontSize: 35 }} > <i className="bi bi-funnel" style={{ fontSize: 25, }}></i></div>
         </Fab>
-
-        <Box sx={{ position: 'fixed', bottom: 50, right: 90 }}>
-            {fabopen && (
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, mb: 1, justifyContent: 'flex-end' }}>
-                    <Fab size="small" sx={{ backgroundColor: '#fff' }} aria-label="add-user">
-                        <i className="bi bi-person-plus" style={{ fontSize: 18 }}></i>
-                    </Fab>
-                    <Fab size="small" sx={{ backgroundColor: '#fff' }} aria-label="add-doc">
-                        <i className="bi bi-calendar-date" style={{ fontSize: 18 }}></i>
-                    </Fab>
-                    <Fab size="small" sx={{ backgroundColor: '#fff' }} aria-label="upload">
-                        <i className="bi bi-upload" style={{ fontSize: 18 }}></i>
-                    </Fab>
-                </Box>
-            )}
-        </Box>
     </>
 
     )

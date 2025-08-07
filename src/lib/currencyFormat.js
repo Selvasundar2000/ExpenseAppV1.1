@@ -1,4 +1,5 @@
 export function currencyFormat(x) {
+     if (x == null) return ''; 
         x = x.toString().split('.');
         let lastThree = x[0].slice(-3);
         let otherNumbers = x[0].slice(0, -3);

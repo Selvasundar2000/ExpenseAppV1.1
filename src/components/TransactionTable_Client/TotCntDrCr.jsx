@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import DataTable from "react-data-table-component";
 import { currencyFormat } from '../../lib/currencyFormat';
 import { totalexpensecount } from '../../services/DBconfunc';
 
-export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount}) {
+export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount,FilterCountUpdate}) {
     const [datalist, setDataList] = useState([]);
-    const [loading, setLoading] = useState(true);
 
 
     const fetchData = async () => {
@@ -13,13 +12,17 @@ export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount}) {
         setDataList(datal)
     };
     useEffect(() => {
-        fetchData();
-    }, [RefreshTotTbl,RefreshTotalCount])
+        if (FilterCountUpdate === '') {
+            fetchData();
+        } else {
+            setDataList(FilterCountUpdate);
+        }   
+    }, [RefreshTotTbl,RefreshTotalCount,FilterCountUpdate])
 
 
     const columns = [
         {
-            name: "Total Credits",
+            name: "Total Credit",
             selector: row => <span style={{ color: 'green', fontWeight: 'bold' }}> ₹&nbsp;{currencyFormat(row.total_credit)}</span>,
             sortable: false,
         },
@@ -37,18 +40,15 @@ export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount}) {
 
     return (
         <>
-
             <div className="card shadow p-1 mb-1 bg-white rounded">
 
                 <DataTable
                     columns={columns}
-                    data={datalist}
-                    pagination={false}
+                    data={datalist}                    
                     highlightOnHover
                     persistTableHead
-                    noHeader={true}
-                />
-               
+                    noHeader={true}                   
+                />               
             </div>
 
         </>
