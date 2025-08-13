@@ -235,67 +235,6 @@ const ContainerBody = () => {
       </DialogActions>
     </Dialog>
 
-
-    {/* <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Expense</DialogTitle>
-        <DialogContent>
-          <br />         
-
-          {formFields.map((field) => {
-        const Component = inputComponents[field.type];
-        if (!Component) return null;
-
-        if (field.type === 'checkbox') {
-          return (
-            <Component
-              key={field.key}
-              label={field.label}
-              selectedValues={formData[field.key] || []}
-              onChange={(value) => handleChange(field.key, value)}
-              options={field.options}
-            />
-          );
-        }
-        return (
-          <Component
-            key={field.key}
-            label={field.label}
-            value={formData[field.key] || ''}
-            onChange={(e) => handleChange(field.key, e.target.value)}
-            placeholder={field.placeholder}
-            name={field.key}
-            options={field.options}
-          />
-        );
-      })}
-
-        </DialogContent>
-        <DialogActions>
-          <Grid item xs={8}>
-            {divAddBtn ?
-              <Button
-                id='btnAdd'
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={handleAddTransaction}
-              >Add +</Button>
-              : null}
-            {divUptBtn ?
-              <Button
-                id='btnUpdate'
-                variant="contained"
-                color="success"
-                size="large"
-                onClick={handleUpdateTransaction}
-              >Update +</Button>
-              : null}
-          </Grid>
-          <Button onClick={handleClose}>Close</Button>
-        </DialogActions>
-      </Dialog> */}
-
-
     {/* DataTable */}
     <Box sx={{ p: { xs: 2, sm: 3, md: 14 } }}>
       <Grid container spacing={2} >

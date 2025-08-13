@@ -52,15 +52,18 @@ export const Dropdown = React.memo(({ label, value, onChange, options }) => (
 
 
 export const DateInput = React.memo(({ label, value, onChange }) => (
-    <TextField
-      fullWidth
-      margin="normal"
-      label={label}
-      type="date"
-      value={value}
-      onChange={onChange}
-      InputLabelProps={{ shrink: true }}
-    />
+  <TextField
+    fullWidth
+    margin="normal"
+    label={label}
+    type="date"
+    value={value}
+    onChange={onChange}
+    InputLabelProps={{ shrink: true }}
+    sx={{
+      minWidth: { xs: '150px', sm: 'auto' }, // on xs screens, min-width 150px, otherwise auto
+    }}
+  />
 
 ));
 
@@ -68,7 +71,7 @@ export const DateInput = React.memo(({ label, value, onChange }) => (
 export const MuiRadioGroup = React.memo(({ label, name, value, onChange, options }) => (
   <FormControl component="fieldset" margin="normal">
     <FormLabel component="legend">{label}</FormLabel>
-    <RadioGroup name={name} value={value} onChange={onChange}>
+    <RadioGroup name={name} value={value} onChange={onChange} row>
       {options.map((opt, idx) => (
         <FormControlLabel
           key={idx}
@@ -80,6 +83,7 @@ export const MuiRadioGroup = React.memo(({ label, name, value, onChange, options
     </RadioGroup>
   </FormControl>
 ));
+
 
 // CheckboxGroup
 export const MuiCheckboxGroup = React.memo(({ label, selectedValues, onChange, options }) => (

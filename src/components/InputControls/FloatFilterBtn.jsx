@@ -10,6 +10,7 @@ import { formFields } from '../FormFieldsConfig/formConfig_DateFilter';
 import { Button } from '@mui/material';
 import { datefilterexpense } from "../../services/DBconfunc";
 import { toast } from "react-toastify";
+import { TransactionList, totalexpensecount } from "../../services/DBconfunc";
 
 export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpdate }) {
     const [fabopen, setfabOpen] = useState(false);
@@ -47,18 +48,39 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
             setFormData((prev) => ({ ...prev, [key]: value }));
         }
     };
+    const handleAllData = async () => {
+
+        var originalRows = await TransactionList();
+
+        if (originalRows.length == 0) {
+            toast.error('No Data Found for the selected date range!');
+            return
+        }
+        setFilterDateUpdate(originalRows);
+
+        var expcnt = await totalexpensecount();
+
+        var CountfilteredData = expcnt.map(item => ({
+            total_credit: item.total_credit,
+            total_debit: item.total_debit,
+            total_transamount: item.total_transamount
+        }));
+        var CntFltDt = CountfilteredData[0]
+
+        setFilterCountUpdate([CntFltDt])
+    }
 
     const handleSubmit = async () => {
         var filStartDate = new Date(formData.FilterStartDate);
         var filEndDate = new Date(formData.FilterEndDate);
         var filtranscode = formData.FilterTOT;
-         if (!filStartDate || !filEndDate || !filtranscode) {
+        if (!filStartDate || !filEndDate || !filtranscode) {
             toast.error('Please Fill All the Fields!');
-            return        
+            return
         }
-        var originalRows = await datefilterexpense(filStartDate, filEndDate,filtranscode);       
-        
-        if (originalRows.length == 0 ) {
+        var originalRows = await datefilterexpense(filStartDate, filEndDate, filtranscode);
+
+        if (originalRows.length == 0) {
             toast.error('No Data Found for the selected date range!');
             return
         }
@@ -75,7 +97,47 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
     return (<>
         <Dialog open={filterDateopen} onClose={handleclose}>
             <DialogTitle>Filter</DialogTitle>
-            <DialogContent>
+              <DialogContent dividers>
+                    <Grid container spacing={2}>
+                      {formFields.map((field) => {
+                        const Component = inputComponents[field.type];
+                        if (!Component) return null;
+            
+                        const gridSize = field.gridSize || 6;
+            
+                        return (
+                          <Grid item xs={12} sm={gridSize} key={field.key}>
+                            {field.type === 'checkbox' ? (
+                              <Component
+                                label={field.label}
+                                selectedValues={formData[field.key] || []}
+                                onChange={(value) => handleChange(field.key, value)}
+                                options={field.options}
+                              />
+                            ) : field.type === 'radio' ? (
+                              <Component
+                                label={field.label}
+                                name={field.key}
+                                value={formData[field.key] || ''}
+                                onChange={(e) => handleChange(field.key, e.target.value)}
+                                options={field.options}
+                              />
+                            ) : (
+                              <Component
+                                label={field.label}
+                                value={formData[field.key] || ''}
+                                onChange={(e) => handleChange(field.key, e.target.value)}
+                                placeholder={field.placeholder}
+                                name={field.key}
+                                options={field.options}
+                              />
+                            )}
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </DialogContent>
+            {/* <DialogContent>
                 <br />
 
                 {formFields.map((field) => {
@@ -106,8 +168,16 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
                     );
                 })}
 
-            </DialogContent>
+            </DialogContent> */}
             <DialogActions>
+                <Grid item xs={8}>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        size="large"
+                        onClick={handleAllData}
+                    >All</Button>
+                </Grid>
                 <Grid item xs={8}>
                     <Button
                         variant="contained"

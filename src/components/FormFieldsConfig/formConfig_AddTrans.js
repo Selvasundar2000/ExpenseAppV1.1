@@ -4,15 +4,13 @@ export const formFields = [
     {
         type: 'date',
         key: 'Tdate',
-        label: 'Transaction Date',
-        gridSize: 4,
+        label: 'Transaction Date'       
     },
     {
         type: 'text',
         key: 'Amount',
         label: 'Amount',
-        placeholder: 'Enter your Amount',
-       gridSize: 4,
+        placeholder: 'Enter your Amount'     
     },
 
     {
@@ -27,8 +25,7 @@ export const formFields = [
             { value: 5, label: 'Medical' },
             { value: 6, label: 'Entertainment' },
             { value: 7, label: 'Other Expenses' }
-        ],
-        gridSize: 4,
+        ],       
     },
     {
         type: 'dropdown',
@@ -37,15 +34,13 @@ export const formFields = [
         options: [
             { value: 1, label: "Credit" },
             { value: 2, label: "Debit" },
-        ],
-        gridSize: 4,
+        ],       
     },
     {
         type: 'text',
         key: 'Descrp',
         label: 'Description',
-        placeholder: 'Enter your Descrp',
-        gridSize: 4,
+        placeholder: 'Enter your Descrp',        
     },
 
 ];
