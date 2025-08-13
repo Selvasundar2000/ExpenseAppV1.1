@@ -14,7 +14,7 @@ import Footer from '../layouts/Footer';
 import { ExpenseDataAdd, TransactionList, ExpenseDataUpdate } from "../services/DBconfunc";
 import sharedRef from '../lib/sharedRef';
 import { TextInput, Dropdown, DateInput, } from './InputControls/MuiFormControls';
-import { formFields } from '../components/FormFieldsConfig/formConfig_AddTrans';
+import { formFields } from './FormFieldsConfig/formConfig_AddTrans';
 import { parseDateToISO } from '../lib/parseDateToISO';
 
 const ContainerBody = () => {
