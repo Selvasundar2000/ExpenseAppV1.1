@@ -51,7 +51,8 @@ export default function generateExportExcel(
     worksheet["!cols"] = Array(columnCount).fill({ wch: 20 });
     // Step 6: Generate file name with current date & time
     const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${now.toLocaleString('en-US', { month: 'short' })}-${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${now.toLocaleString('en-US', { month: 'short' })}-${now.getFullYear()}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+
     const filename = `${FileFullName}_${formattedDate}.xlsx`;
 
     // Step 7: Export as .xlsx
