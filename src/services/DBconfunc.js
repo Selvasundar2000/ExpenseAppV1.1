@@ -12,7 +12,7 @@ export const TransactionList = async () => {
       console.error("Error:", error1);
 
     } else {
-      return datalist || [];
+      return (datalist || []);
     }
   } catch (error1) {
     console.error("Request failed:", error1);
@@ -39,23 +39,6 @@ export const TransactionDelete = async (autocode) => {
 
   }
 }
-
-export const totalexpensecount = async () => {
-
-  try {
-    const { data: datalist, error: error1 } = await supabase.rpc("totaldebitcreditcount");
-
-    if (error1) {
-      console.error("Error:", error1);
-    } else {
-      return (datalist || []);
-    }
-  } catch (error1) {
-    console.error("Request failed:", error1);
-
-  }
-}
-
 
 export const ExpenseDataAdd = async (Amount, formattedDate, TOE, TOT, Descrp) => {
 

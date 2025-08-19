@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import DataTable from "react-data-table-component";
 import { currencyFormat } from '../../lib/currencyFormat';
-import { totalexpensecount } from '../../services/DBconfunc';
+import { TransactionList } from '../../services/DBconfunc';
 
-export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount,FilterCountUpdate}) {
+export default function TotalCntDrCr({ RefreshTotTbl, RefreshTotalCount, FilterCountUpdate }) {
     const [datalist, setDataList] = useState([]);
-
-
     const fetchData = async () => {
-        const datal = await totalexpensecount();
-        setDataList(datal)
+        let datal = await TransactionList();
+        const extracted = [Object.entries(datal[0])
+            .filter(([key]) => ["total_credit", "total_debit", "total_transamount"].includes(key))
+            .reduce((acc, [key, value]) => {
+                acc[key] = value;
+                return acc;
+            }, {})]
+        setDataList(extracted)
     };
     useEffect(() => {
         if (FilterCountUpdate === '') {
             fetchData();
         } else {
             setDataList(FilterCountUpdate);
-        }   
-    }, [RefreshTotTbl,RefreshTotalCount,FilterCountUpdate])
+        }
+    }, [RefreshTotTbl, RefreshTotalCount, FilterCountUpdate])
 
 
     const columns = [
@@ -39,17 +43,16 @@ export default function TotalCntDrCr({RefreshTotTbl,RefreshTotalCount,FilterCoun
     ];
 
     return (
-        <>
+        <>          
             <div className="card shadow p-1 mb-1 bg-white rounded">
-
                 <DataTable
                     columns={columns}
-                    data={datalist}                    
+                    data={datalist}
                     highlightOnHover
                     persistTableHead
-                    noHeader={true}                   
-                />               
-            </div>
+                    noHeader={true}
+                />
+            </div>            
 
         </>
     )

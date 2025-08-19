@@ -8,9 +8,8 @@ import {
 } from './MuiFormControls';
 import { formFields } from '../FormFieldsConfig/formConfig_DateFilter';
 import { Button } from '@mui/material';
-import { datefilterexpense } from "../../services/DBconfunc";
+import { datefilterexpense,TransactionList } from "../../services/DBconfunc";
 import { toast } from "react-toastify";
-import { TransactionList, totalexpensecount } from "../../services/DBconfunc";
 
 export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpdate }) {
     const [fabopen, setfabOpen] = useState(false);
@@ -49,24 +48,19 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
         }
     };
     const handleAllData = async () => {
-
         var originalRows = await TransactionList();
-
         if (originalRows.length == 0) {
             toast.error('No Data Found for the selected date range!');
             return
         }
         setFilterDateUpdate(originalRows);
-
-        var expcnt = await totalexpensecount();
-
+        var expcnt = originalRows;
         var CountfilteredData = expcnt.map(item => ({
             total_credit: item.total_credit,
             total_debit: item.total_debit,
             total_transamount: item.total_transamount
         }));
         var CntFltDt = CountfilteredData[0]
-
         setFilterCountUpdate([CntFltDt])
     }
 
@@ -136,39 +130,7 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
                         );
                       })}
                     </Grid>
-                  </DialogContent>
-            {/* <DialogContent>
-                <br />
-
-                {formFields.map((field) => {
-                    const Component = inputComponents[field.type];
-                    if (!Component) return null;
-
-                    if (field.type === 'checkbox') {
-                        return (
-                            <Component
-                                key={field.key}
-                                label={field.label}
-                                selectedValues={formData[field.key] || []}
-                                onChange={(value) => handleChange(field.key, value)}
-                                options={field.options}
-                            />
-                        );
-                    }
-                    return (
-                        <Component
-                            key={field.key}
-                            label={field.label}
-                            value={formData[field.key] || ''}
-                            onChange={(e) => handleChange(field.key, e.target.value)}
-                            placeholder={field.placeholder}
-                            name={field.key}
-                            options={field.options}
-                        />
-                    );
-                })}
-
-            </DialogContent> */}
+                  </DialogContent>            
             <DialogActions>
                 <Grid item xs={8}>
                     <Button

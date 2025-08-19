@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// import Dropdown from './InputControls/Dropdown';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Box, Fab, Grid } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,6 +15,7 @@ import sharedRef from '../lib/sharedRef';
 import { TextInput, Dropdown, DateInput, } from './InputControls/MuiFormControls';
 import { formFields } from './FormFieldsConfig/formConfig_AddTrans';
 import { parseDateToISO } from '../lib/parseDateToISO';
+import generateExportExcel from '../lib/exportExcel';
 
 const ContainerBody = () => {
   const [FilterDateUpdate, setFilterDateUpdate] = useState('');
@@ -32,6 +32,36 @@ const ContainerBody = () => {
 
   const [RefreshTotalCount, setRefreshTotalCount] = useState('');
 
+  const handleExportExcel = async () => {
+    const Data = sharedRef.current[0];
+    const removeKeys = ["autocode", "expensecode", "transcode"];
+    const columnMap = {
+      amount: "Amount",
+      dateoftrans: "Date Of Transaction",
+      transname: "Type Of Transaction",
+      expensename: "Type Of Expense",
+      descrp: "Description",
+      total_credit:"Total Debit",
+      total_debit:"Total Credit",
+      total_transamount:"Total Amount",
+    };
+    const FileFullName = "TransactionList";
+
+    const orderedKeys = [
+      columnMap.dateoftrans,
+      columnMap.transname,
+      columnMap.expensename,
+      columnMap.amount,
+      columnMap.descrp,
+      columnMap.total_credit,
+      columnMap.total_debit,
+      columnMap.total_transamount
+    ];
+
+    generateExportExcel(Data, removeKeys, columnMap, FileFullName, orderedKeys);
+    
+  };
+
 
   function refreshTransTable() {
     setRefreshTransTbl(prev => !prev);
@@ -39,8 +69,8 @@ const ContainerBody = () => {
   }
 
 
-  const fetchData = async () => {
-    await TransactionList();
+  const fetchData = async () => {    
+    sharedRef.current=[await TransactionList()]
   };
   useEffect(() => {
     fetchData();
@@ -246,6 +276,15 @@ const ContainerBody = () => {
           <TotalCntDrCr RefreshTotTbl={RefreshTotTbl} RefreshTotalCount={RefreshTotalCount}
             FilterCountUpdate={FilterCountUpdate}
           />
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <Button
+            variant="contained"
+            color="success"
+            size="large"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            onClick={handleExportExcel}
+          >Export <i class="bi bi-file-earmark-spreadsheet"></i></Button>
         </Grid>
       </Grid>
       <FloatFilterBtn setFilterDateUpdate={setFilterDateUpdate} setFilterCountUpdate={setFilterCountUpdate} />

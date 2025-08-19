@@ -20,7 +20,8 @@ export default function TransactionTable({ RefreshTransTbl, onDetail, setRefresh
             fetchData();            
         }
         else {
-            setDataList(FilterDateUpdate);                       
+            setDataList(FilterDateUpdate);    
+            sharedRef.current= [FilterDateUpdate];                 
         }
 
     }, [RefreshTransTbl, FilterDateUpdate]);
