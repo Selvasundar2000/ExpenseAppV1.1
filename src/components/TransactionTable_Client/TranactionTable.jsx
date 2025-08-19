@@ -17,11 +17,11 @@ export default function TransactionTable({ RefreshTransTbl, onDetail, setRefresh
     };
     useEffect(() => {
         if (FilterDateUpdate === '') {
-            fetchData();            
+            fetchData();
         }
         else {
-            setDataList(FilterDateUpdate);    
-            sharedRef.current= [FilterDateUpdate];                 
+            setDataList(FilterDateUpdate);
+            sharedRef.current = [FilterDateUpdate];
         }
 
     }, [RefreshTransTbl, FilterDateUpdate]);
@@ -47,9 +47,18 @@ export default function TransactionTable({ RefreshTransTbl, onDetail, setRefresh
             name: "Date",
             selector: row => row.dateoftrans,
             cell: row => (
-                <a style={{ color: "blue" }} className="detVal" onClick={() => handleDetailTransaction(row)} href="#">
+                <button style={{
+                    color: "blue",
+                    cursor: "pointer",
+                    background: "none",  
+                    border: "none",     
+                    padding: 0,          
+                    font: "inherit"     
+                }}
+
+                    className="detVal" onClick={() => handleDetailTransaction(row)} >
                     <span className="badge bg-primary">{row.dateoftrans}</span>
-                </a>
+                </button>
             ),
             sortable: true,
         },
@@ -87,14 +96,23 @@ export default function TransactionTable({ RefreshTransTbl, onDetail, setRefresh
         {
             name: "Action",
             cell: row => (
-                <a
-                    style={{ color: "red", cursor: "pointer" }}
+                <button
+                    style={{
+                        color: "red", 
+                        cursor: "pointer",
+                        background: "none",  
+                        border: "none",      
+                        padding: 0,          
+                        font: "inherit"     
+                    }}
                     onClick={() => handleDeleteTransaction(row.autocode)}
                     className="delval"
-                    href="#"
+                    type="button"
                 >
+
+
                     <i className="bi bi-trash"></i>
-                </a>
+                </button>
             ),
         },
     ];

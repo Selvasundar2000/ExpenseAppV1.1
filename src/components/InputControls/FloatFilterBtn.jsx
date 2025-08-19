@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Grid, Radio } from "@mui/material";
+import { Grid } from "@mui/material";
 import Fab from "@mui/material/Fab";
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import {
@@ -12,10 +12,8 @@ import { datefilterexpense,TransactionList } from "../../services/DBconfunc";
 import { toast } from "react-toastify";
 
 export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpdate }) {
-    const [fabopen, setfabOpen] = useState(false);
     const [filterDateopen, setfilterDateopen] = useState(false);
     const handleFilterDate = () => {
-        setfabOpen(prev => !prev);
         setfilterDateopen(true);
     }
 
@@ -49,7 +47,7 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
     };
     const handleAllData = async () => {
         var originalRows = await TransactionList();
-        if (originalRows.length == 0) {
+        if (originalRows.length === 0) {
             toast.error('No Data Found for the selected date range!');
             return
         }
@@ -74,7 +72,7 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
         }
         var originalRows = await datefilterexpense(filStartDate, filEndDate, filtranscode);
 
-        if (originalRows.length == 0) {
+        if (originalRows.length === 0) {
             toast.error('No Data Found for the selected date range!');
             return
         }

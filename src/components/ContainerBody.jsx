@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Box, Fab, Grid } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -110,7 +110,7 @@ const ContainerBody = () => {
   }
 
 
-  const detailbindFun = useCallback(() => detailbindControl());
+   ///const detailbindFun = useCallback(() => detailbindControl());
 
   function detailbindControl() {
     handleUpdateClick();
@@ -269,7 +269,7 @@ const ContainerBody = () => {
     <Box sx={{ p: { xs: 2, sm: 3, md: 14 } }}>
       <Grid container spacing={2} >
         <Grid item xs={12} md={2} >
-          <TransactionTable RefreshTransTbl={RefreshTransTbl} onDetail={detailbindFun} setRefreshTotalCount={setRefreshTotalCount} FilterDateUpdate={FilterDateUpdate}
+          <TransactionTable RefreshTransTbl={RefreshTransTbl} onDetail={detailbindControl} setRefreshTotalCount={setRefreshTotalCount} FilterDateUpdate={FilterDateUpdate}
           />
         </Grid>
         <Grid item xs={12} md={10}>
