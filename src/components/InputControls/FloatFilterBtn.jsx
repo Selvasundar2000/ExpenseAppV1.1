@@ -93,12 +93,10 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
                     <Grid container spacing={2}>
                       {formFields.map((field) => {
                         const Component = inputComponents[field.type];
-                        if (!Component) return null;
-            
-                        const gridSize = field.gridSize || 6;
+                        if (!Component) return null;            
             
                         return (
-                          <Grid item xs={12} sm={gridSize} key={field.key}>
+                          <Grid  key={field.key}>
                             {field.type === 'checkbox' ? (
                               <Component
                                 label={field.label}
@@ -130,7 +128,7 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
                     </Grid>
                   </DialogContent>            
             <DialogActions>
-                <Grid item xs={8}>
+                <Grid  >
                     <Button
                         variant="contained"
                         color="error"
@@ -138,7 +136,7 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
                         onClick={handleAllData}
                     >All</Button>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid  >
                     <Button
                         variant="contained"
                         color="primary"

@@ -5,7 +5,7 @@ export default function Header() {
     <AppBar position="static">
       <Typography variant="body2" component="div">
         <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
+          <Grid >
             Project Untitled
           </Grid>
         </Grid>

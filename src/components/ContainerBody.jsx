@@ -200,11 +200,9 @@ const ContainerBody = () => {
           {formFields.map((field) => {
             const Component = inputComponents[field.type];
             if (!Component) return null;
-
-            const gridSize = field.gridSize || 6;
-
+         
             return (
-              <Grid item xs={12} sm={gridSize} key={field.key}>
+              <Grid  key={field.key}>
                 {field.type === 'checkbox' ? (
                   <Component
                     label={field.label}
@@ -268,23 +266,23 @@ const ContainerBody = () => {
     {/* DataTable */}
     <Box sx={{ p: { xs: 2, sm: 3, md: 14 } }}>
       <Grid container spacing={2} >
-        <Grid item xs={12} md={2} >
+        <Grid >
           <TransactionTable RefreshTransTbl={RefreshTransTbl} onDetail={detailbindControl} setRefreshTotalCount={setRefreshTotalCount} FilterDateUpdate={FilterDateUpdate}
           />
         </Grid>
-        <Grid item xs={12} md={10}>
+        <Grid  >
           <TotalCntDrCr RefreshTotTbl={RefreshTotTbl} RefreshTotalCount={RefreshTotalCount}
             FilterCountUpdate={FilterCountUpdate}
           />
         </Grid>
-        <Grid item xs={12} md={2}>
+        <Grid >
           <Button
             variant="contained"
             color="success"
             size="large"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
             onClick={handleExportExcel}
-          >Export <i class="bi bi-file-earmark-spreadsheet"></i></Button>
+          >Export <i className="bi bi-file-earmark-spreadsheet"></i></Button>
         </Grid>
       </Grid>
       <FloatFilterBtn setFilterDateUpdate={setFilterDateUpdate} setFilterCountUpdate={setFilterCountUpdate} />
