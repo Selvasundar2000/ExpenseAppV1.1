@@ -46,43 +46,43 @@ export default function FloatFilterBtn({ setFilterDateUpdate, setFilterCountUpda
         }
     };
     const handleAllData = async () => {
-        var originalRows = await TransactionList();
+        let originalRows = await TransactionList();
         if (originalRows.length === 0) {
             toast.error('No Data Found for the selected date range!');
             return
         }
         setFilterDateUpdate(originalRows);
-        var expcnt = originalRows;
-        var CountfilteredData = expcnt.map(item => ({
+        let expcnt = originalRows;
+        let CountfilteredData = expcnt.map(item => ({
             total_credit: item.total_credit,
             total_debit: item.total_debit,
             total_transamount: item.total_transamount
         }));
-        var CntFltDt = CountfilteredData[0]
+        let CntFltDt = CountfilteredData[0]
         setFilterCountUpdate([CntFltDt])
     }
 
     const handleSubmit = async () => {
-        var filStartDate = new Date(formData.FilterStartDate);
-        var filEndDate = new Date(formData.FilterEndDate);
-        var filtranscode = formData.FilterTOT;
+        let filStartDate = new Date(formData.FilterStartDate);
+        let filEndDate = new Date(formData.FilterEndDate);
+        let filtranscode = formData.FilterTOT;
         if (!filStartDate || !filEndDate || !filtranscode) {
             toast.error('Please Fill All the Fields!');
             return
         }
-        var originalRows = await datefilterexpense(filStartDate, filEndDate, filtranscode);
+        let originalRows = await datefilterexpense(filStartDate, filEndDate, filtranscode);
 
         if (originalRows.length === 0) {
             toast.error('No Data Found for the selected date range!');
             return
         }
         setFilterDateUpdate(originalRows);
-        var CountfilteredData = originalRows.map(item => ({
+        let CountfilteredData = originalRows.map(item => ({
             total_credit: item.total_credit,
             total_debit: item.total_debit,
             total_transamount: item.total_transamount
         }));
-        var CntFltDt = CountfilteredData[0]
+        let CntFltDt = CountfilteredData[0]
         setFilterCountUpdate([CntFltDt])
     }
 
